@@ -1,12 +1,12 @@
 import os
 import tomllib
 from typing import Any
-from joblib import Parallel, delayed
 
 import numpy as np
 import pandas as pd
 from scipy import stats
 from statsmodels.stats.proportion import proportion_confint
+from joblib import Parallel, delayed
 
 def read_setting(setting_file_path: str) -> dict[str, Any]:
     """設定ファイルを読み込む"""
@@ -48,14 +48,17 @@ def t_test(group1: np.ndarray, group2: np.ndarray, method: str) -> tuple:
     elif method == 'welch':
         welch_ttest = stats.ttest_ind(group1, group2, equal_var=False)
         return welch_ttest
+    else:
+        raise ValueError(f"unknown method: {method!r}")
 
 def calc_alpha_error_and_interval(p_values: np.ndarray, alpha: float = 0.05, ci_alpha: float = 0.05, method: str = 'wilson') -> tuple:
     """αエラーとその信頼区間を算出する"""
+    p_values = p_values[~np.isnan(p_values)]
     reject_count = np.sum(p_values < alpha)
     sample_size = p_values.shape[0]
     alpha_error = reject_count / sample_size
     low, high = proportion_confint(reject_count, sample_size, alpha=ci_alpha, method=method)
-    return alpha_error, low, high
+    return alpha_error, low, high, sample_size
 
 def run_one_cell(
     loc_group1,
@@ -108,8 +111,8 @@ def run_one_cell(
     welch_pvals = np.concatenate(welch_pvals)
 
     # αエラーと信頼区間を算出
-    student_alpha_error, student_ci_low, student_ci_high = calc_alpha_error_and_interval(student_pvals)
-    welch_alpha_error, welch_ci_low, welch_ci_high = calc_alpha_error_and_interval(welch_pvals)
+    student_alpha_error, student_ci_low, student_ci_high, student_valid_n = calc_alpha_error_and_interval(student_pvals)
+    welch_alpha_error, welch_ci_low, welch_ci_high, welch_valid_n = calc_alpha_error_and_interval(welch_pvals)
 
     # p値の分位点を算出する
     student_p_quantiles = np.nanquantile(student_pvals, quantiles)
@@ -122,6 +125,7 @@ def run_one_cell(
         'student_alpha_error': student_alpha_error, 'welch_alpha_error': welch_alpha_error,
         'student_ci_low': student_ci_low, 'student_ci_high': student_ci_high,
         'welch_ci_low': welch_ci_low, 'welch_ci_high': welch_ci_high,
+        'student_valid_n': student_valid_n, 'welch_valid_n': welch_valid_n
     }
 
     for q, p_value in zip(quantiles, student_p_quantiles):
@@ -189,3 +193,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
