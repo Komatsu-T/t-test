@@ -6,7 +6,8 @@ RUN pip install --no-cache-dir \
     statsmodels==0.14.6 \
     pandas==2.2.2 \
     pyarrow==18.1.0 \
-    joblib==1.5.3
+    joblib==1.5.3 \
+    tqdm==4.68.3
 
 WORKDIR /work
 

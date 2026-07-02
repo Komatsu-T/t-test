@@ -7,6 +7,7 @@ import pandas as pd
 from scipy import stats
 from statsmodels.stats.proportion import proportion_confint
 from joblib import Parallel, delayed
+from tqdm import tqdm
 
 def read_setting(setting_file_path: str) -> dict[str, Any]:
     """設定ファイルを読み込む"""
@@ -220,8 +221,8 @@ def main():
                 seed = seed_seq.spawn(1)[0]
                 tasks.append((SAMPLE_SIZE_G1, SAMPLE_SIZE_G2, SIGMA_G2, seed))
 
-    # 並列実行
-    results = Parallel(n_jobs=N_JOBS)(
+    # 並列実行 (ジェネレータを作ってからtqdmでラップして実行)
+    sim_generator = Parallel(n_jobs=N_JOBS, return_as='generator')(
         delayed(run_one_cell)(
             loc_group1=MU_G1,
             loc_group2=MU_G1,
@@ -238,6 +239,7 @@ def main():
         )
         for (s1, s2, sigma_g2, seed) in tasks
     )
+    results = list(tqdm(sim_generator, total=len(tasks)))
 
     # データフレームにして出力
     sim_result_data = pd.DataFrame(results)
