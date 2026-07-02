@@ -51,7 +51,7 @@ def t_test(group1: np.ndarray, group2: np.ndarray, method: str) -> tuple:
     else:
         raise ValueError(f"unknown method: {method!r}")
 
-def calc_alpha_error_and_interval(p_values: np.ndarray, alpha: float = 0.05, ci_alpha: float = 0.05, method: str = 'wilson') -> tuple:
+def calc_alpha_error_and_interval(p_values: np.ndarray, alpha: float, ci_alpha: float, method: str = 'wilson') -> tuple:
     """αエラーとその信頼区間を算出する"""
     p_values = p_values[~np.isnan(p_values)]
     reject_count = np.sum(p_values < alpha)
@@ -60,6 +60,43 @@ def calc_alpha_error_and_interval(p_values: np.ndarray, alpha: float = 0.05, ci_
     low, high = proportion_confint(reject_count, sample_size, alpha=ci_alpha, method=method)
     return alpha_error, low, high, sample_size
 
+def contingency_table(student_pvals, welch_pvals, alpha):
+    """2つの検定の棄却に対する分割表の度数を算出する"""
+    valid = ~np.isnan(student_pvals) & ~np.isnan(welch_pvals)
+    rej_s = student_pvals[valid] < alpha
+    rej_w = welch_pvals[valid] < alpha
+
+    both_reject = int(np.sum(rej_s &  rej_w))
+    student_only = int(np.sum(rej_s & ~rej_w))
+    welch_only = int(np.sum(~rej_s &  rej_w))
+    n_paired = int(valid.sum())
+    return both_reject, student_only, welch_only, n_paired
+
+def newcombe_paired_diff_ci(
+        p1, l1, u1, p2, l2, u2,
+        both_reject, student_only, welch_only, n
+):
+    """Newcombe型の対応のある比率の差の信頼区間。信頼水準はcalc_alpha_error_and_intervalで使用された信頼水準を引き継ぐ。"""
+    p1, l1, u1 = np.asarray(p1, float), np.asarray(l1, float), np.asarray(u1, float)
+    p2, l2, u2 = np.asarray(p2, float), np.asarray(l2, float), np.asarray(u2, float)
+    a = np.asarray(both_reject, float)
+    b = np.asarray(student_only, float)
+    c = np.asarray(welch_only, float)
+    n = np.asarray(n, float)
+    d = n - a - b - c
+
+    diff = p1 - p2
+
+    # 2x2表の phi係数(棄却の相関)。周辺度数が0なら相関補正なし(phi=0)
+    denom = (a + b) * (c + d) * (a + c) * (b + d)
+    safe = denom > 0
+    phi = np.where(safe, (a * d - b * c) / np.sqrt(np.where(safe, denom, 1.0)), 0.0)
+
+    # 既存Wilson端の距離を二乗して足し、phiで相関補正
+    low = diff - np.sqrt(np.clip((p1 - l1) ** 2 - 2 * phi * (p1 - l1) * (u2 - p2) + (u2 - p2) ** 2, 0.0, None))
+    high = diff + np.sqrt(np.clip((u1 - p1) ** 2 - 2 * phi * (u1 - p1) * (p2 - l2) + (p2 - l2) ** 2, 0.0, None))
+    return diff, low, high
+
 def run_one_cell(
     loc_group1,
     loc_group2,
@@ -67,6 +104,8 @@ def run_one_cell(
     sigma_group2,
     sample_size_group1,
     sample_size_group2,
+    significance_alpha,
+    confidence_interval_alpha,
     quantiles,
     n_simulation,
     batch_size,
@@ -110,13 +149,21 @@ def run_one_cell(
     student_pvals = np.concatenate(student_pvals)
     welch_pvals = np.concatenate(welch_pvals)
 
-    # αエラーと信頼区間を算出
-    student_alpha_error, student_ci_low, student_ci_high, student_valid_n = calc_alpha_error_and_interval(student_pvals)
-    welch_alpha_error, welch_ci_low, welch_ci_high, welch_valid_n = calc_alpha_error_and_interval(welch_pvals)
+    # αエラーとその信頼区間を算出
+    student_alpha_error, student_ci_low, student_ci_high, student_valid_n = calc_alpha_error_and_interval(student_pvals, significance_alpha, confidence_interval_alpha)
+    welch_alpha_error, welch_ci_low, welch_ci_high, welch_valid_n = calc_alpha_error_and_interval(welch_pvals, significance_alpha, confidence_interval_alpha)
 
     # p値の分位点を算出する
     student_p_quantiles = np.nanquantile(student_pvals, quantiles)
     welch_p_quantiles = np.nanquantile(welch_pvals, quantiles)
+
+    # αエラーの差とその信頼区間を算出
+    both_reject, student_only, welch_only, n_paired = contingency_table(student_pvals, welch_pvals, significance_alpha)
+    diff, diff_low, diff_high = newcombe_paired_diff_ci(
+        student_alpha_error, student_ci_low, student_ci_high,
+        welch_alpha_error, welch_ci_low, welch_ci_high,
+        both_reject, student_only, welch_only, n_paired
+    )
 
     # 結果保存
     result = {
@@ -125,7 +172,9 @@ def run_one_cell(
         'student_alpha_error': student_alpha_error, 'welch_alpha_error': welch_alpha_error,
         'student_ci_low': student_ci_low, 'student_ci_high': student_ci_high,
         'welch_ci_low': welch_ci_low, 'welch_ci_high': welch_ci_high,
-        'student_valid_n': student_valid_n, 'welch_valid_n': welch_valid_n
+        'student_valid_n': student_valid_n, 'welch_valid_n': welch_valid_n,
+        'alpha_error_diff': diff, 'alpha_error_diff_ci_low': diff_low,
+        'alpha_error_diff_ci_high': diff_high, 'alpha_error_diff_valid_n': n_paired
     }
 
     for q, p_value in zip(quantiles, student_p_quantiles):
@@ -138,19 +187,21 @@ def run_one_cell(
 
 def main():
     # 設定ファイル読み込み
-    settings = read_setting('./settings.toml')
-    MU_G1 = settings['alpha_error_simulation']['group1_mu']
-    SIGMA_G1 = settings['alpha_error_simulation']['group1_sigma']
-    SAMPLE_SIZE_LIST_G1 = settings['alpha_error_simulation']['group1_sample_size']
-    SIGMA_RATIO_LOG_RANGE = settings['alpha_error_simulation']['sigma_ratio_log_range']
-    SAMPLE_SIZE_RATIO_LOG_RANGE = settings['alpha_error_simulation']['sample_size_log_range']
-    N_SIGMA_POINT = settings['alpha_error_simulation']['sigma_ratio_n_point']
-    N_SAPLE_SIZE_POINT = settings['alpha_error_simulation']['sample_size_n_point']
-    QUANTILES = settings['alpha_error_simulation']['quantile']
-    N_SIMULATION = settings['alpha_error_simulation']['simulation_n_repete']
-    BATCH_SIZE = settings['alpha_error_simulation']['batch_size']
-    PARENT_SEED = settings['alpha_error_simulation']['parent_seed']
-    N_JOBS = settings['alpha_error_simulation']['n_jobs']
+    settings = read_setting('./settings.toml')['alpha_error_simulation']
+    MU_G1 = settings['group1_mu']
+    SIGMA_G1 = settings['group1_sigma']
+    SAMPLE_SIZE_LIST_G1 = settings['group1_sample_size']
+    SIGMA_RATIO_LOG_RANGE = settings['sigma_ratio_log_range']
+    SAMPLE_SIZE_RATIO_LOG_RANGE = settings['sample_size_log_range']
+    N_SIGMA_POINT = settings['sigma_ratio_n_point']
+    N_SAMPLE_SIZE_POINT = settings['sample_size_n_point']
+    SIGNIFICANCE_ALPHA = settings['significance_alpha']
+    CONFIDENCE_INTERVAL_ALPHA = settings['confidence_interval_alpha']
+    QUANTILES = settings['quantile']
+    N_SIMULATION = settings['simulation_n_repete']
+    BATCH_SIZE = settings['batch_size']
+    PARENT_SEED = settings['parent_seed']
+    N_JOBS = settings['n_jobs']
 
     # 標準偏差を動かす値を設定 (Group2の標準偏差)
     SIGMA_LIST_G2 = make_sigma_list(SIGMA_RATIO_LOG_RANGE[0], SIGMA_RATIO_LOG_RANGE[-1], N_SIGMA_POINT, SIGMA_G1)
@@ -160,8 +211,8 @@ def main():
     seed_seq = np.random.SeedSequence(PARENT_SEED)
     for SAMPLE_SIZE_G1 in SAMPLE_SIZE_LIST_G1:
 
-        # サンプルサイズを動かす値を設定 (Group2の標準偏差)
-        SAMPLE_SIZE_LIST_G2 = make_sample_size_list(SAMPLE_SIZE_RATIO_LOG_RANGE[0], SAMPLE_SIZE_RATIO_LOG_RANGE[-1], N_SAPLE_SIZE_POINT, SAMPLE_SIZE_G1)
+        # サンプルサイズを動かす値を設定 (Group2のサンプルサイズ)
+        SAMPLE_SIZE_LIST_G2 = make_sample_size_list(SAMPLE_SIZE_RATIO_LOG_RANGE[0], SAMPLE_SIZE_RATIO_LOG_RANGE[-1], N_SAMPLE_SIZE_POINT, SAMPLE_SIZE_G1)
 
         # タスクのリスト化
         for SAMPLE_SIZE_G2 in SAMPLE_SIZE_LIST_G2:
@@ -172,15 +223,17 @@ def main():
     # 並列実行
     results = Parallel(n_jobs=N_JOBS)(
         delayed(run_one_cell)(
-            loc_group1=MU_G1, 
+            loc_group1=MU_G1,
             loc_group2=MU_G1,
-            sigma_group1=SIGMA_G1, 
+            sigma_group1=SIGMA_G1,
             sigma_group2=sigma_g2,
-            sample_size_group1=s1, 
+            sample_size_group1=s1,
             sample_size_group2=s2,
-            quantiles=QUANTILES, 
+            significance_alpha=SIGNIFICANCE_ALPHA,
+            confidence_interval_alpha=CONFIDENCE_INTERVAL_ALPHA,
+            quantiles=QUANTILES,
             n_simulation=N_SIMULATION,
-            batch_size=BATCH_SIZE, 
+            batch_size=BATCH_SIZE,
             seed=seed,
         )
         for (s1, s2, sigma_g2, seed) in tasks
