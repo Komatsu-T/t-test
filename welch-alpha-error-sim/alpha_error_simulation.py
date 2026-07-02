@@ -222,7 +222,7 @@ def main():
                 tasks.append((SAMPLE_SIZE_G1, SAMPLE_SIZE_G2, SIGMA_G2, seed))
 
     # 並列実行 (ジェネレータを作ってからtqdmでラップして実行)
-    sim_generator = Parallel(n_jobs=N_JOBS, return_as='generator')(
+    sim_generator = Parallel(n_jobs=N_JOBS, return_as='generator_unordered')(
         delayed(run_one_cell)(
             loc_group1=MU_G1,
             loc_group2=MU_G1,
