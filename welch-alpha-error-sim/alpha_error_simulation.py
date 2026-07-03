@@ -77,7 +77,7 @@ def newcombe_paired_diff_ci(
         p1, l1, u1, p2, l2, u2,
         both_reject, student_only, welch_only, n
 ):
-    """Newcombe型の対応のある比率の差の信頼区間。信頼水準はcalc_alpha_error_and_intervalで使用された信頼水準を引き継ぐ。"""
+    """Newcombe型の対応のある比率の差の信頼区間。calc_alpha_error_and_intervalで使用された信頼水準を引き継ぐ。"""
     p1, l1, u1 = np.asarray(p1, float), np.asarray(l1, float), np.asarray(u1, float)
     p2, l2, u2 = np.asarray(p2, float), np.asarray(l2, float), np.asarray(u2, float)
     a = np.asarray(both_reject, float)
