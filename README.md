@@ -26,11 +26,17 @@ Since the specific execution steps vary from one simulation to another, please r
 This simulation sets the population means of the two groups to be equal (a situation where the null hypothesis is true) and compares the rate at which Student's t-test and Welch's t-test falsely reject the null hypothesis—that is, the Type I error (α error). By varying the ratio of population variances and the ratio of sample sizes over a grid, it examines how far the α error of each test deviates from the nominal significance level under each condition.
 For each condition, samples for the two groups are generated from normal distributions and both tests are applied; this is repeated 1,000,000 times to calculate the rejection rate (α error) and its confidence interval, the difference in α error between the two tests, and the quantiles of the p-values. The settings are managed in the [alpha_error_simulation] section of settings.toml, and the results are output in Parquet format.
 
-Run the following commands on AWS EC2:
-
+Run the following commands on AWS EC2. The generated results are stored in Amazon S3.
 ```bash
 git clone https://github.com/Komatsu-T/t-test.git
 cd t-test/welch-alpha-error-sim
 bash setup.sh
 bash run.sh
 ```
+The execution environment is as follows:
+
+| Item | Details |
+| --- | --- |
+| Instance type | (e.g., c7i.24xlarge) |
+| OS / AMI | (e.g., Ubuntu 24.04 LTS) |
+| Approx. runtime | (e.g., about X hours) |
