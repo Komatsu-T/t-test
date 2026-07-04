@@ -37,6 +37,6 @@ The execution environment is as follows:
 
 | Item | Details |
 | --- | --- |
-| Instance type | (e.g., c7i.24xlarge) |
-| OS / AMI | (e.g., Ubuntu 24.04 LTS) |
-| Approx. runtime | (e.g., about X hours) |
+| Instance type | m7i.8xlarge  |
+| OS / AMI | Ubuntu 24.04 LTS |
+| Approx. runtime | about 30 minutes|
