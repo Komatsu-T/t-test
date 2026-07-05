@@ -24,11 +24,11 @@ def generate_2group_poisson_random_values(
 ) -> tuple:
     """指定のパラメータを持つポアソン乱数を2群分生成する"""
     rng = np.random.default_rng(seed)
-    group1 = rng.poisson(lam=lam, size=(sample_size_group1, n_simulation))
-    group2 = rng.poisson(lam=lam, size=(sample_size_group2, n_simulation))
+    group1 = rng.poisson(lam=lam, size=(sample_size_group1, n_simulation)).astype(np.int32)
+    group2 = rng.poisson(lam=lam, size=(sample_size_group2, n_simulation)).astype(np.int32)
     return group1, group2
 
-def make_lambda_list_from_skerwness(low, high, num) -> np.ndarray:
+def make_lambda_list_from_skewness(low, high, num) -> np.ndarray:
     """設定ファイルから歪度が等間隔になるようにポアソンのパラメータのリストを作成する"""
     skewness = np.linspace(low, high, num=num, endpoint=True)
     lam = 1.0 / (skewness ** 2)
@@ -194,7 +194,7 @@ def main():
     N_JOBS = settings['n_jobs']
 
     # ポアソン分布のパラメータが動く値を設定
-    LAMBDA_LIST = make_lambda_list_from_skerwness(SKEWNESS_RANGE[0], SKEWNESS_RANGE[-1], N_SKEWNESS_POINT)
+    LAMBDA_LIST = make_lambda_list_from_skewness(SKEWNESS_RANGE[0], SKEWNESS_RANGE[-1], N_SKEWNESS_POINT)
 
     # 先に全タスク（パラメータ＋子シード）を逐次でリスト化
     tasks = []
