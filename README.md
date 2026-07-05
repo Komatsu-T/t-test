@@ -31,7 +31,7 @@ Run the following commands on AWS EC2. The generated results are stored in Amazo
 git clone https://github.com/Komatsu-T/t-test.git
 cd t-test/welch-alpha-error-sim
 bash setup.sh
-bash run.sh
+tmux new-session -d -s sim 'bash run.sh'
 ```
 The execution environment is as follows:
 
