@@ -1,10 +1,10 @@
 [alpha_error_simulation]
 group1_mu = 0
 group1_sigma = 3
-group1_sample_size = [20, 50, 100]
 sigma_ratio_log_range = [-0.5, 0.5]
 sigma_ratio_n_point = 51
-sample_size_log_range = [-1, 1]
+total_sample_size = [30, 50, 100]
+min_sample_size_to_total = 0.1
 sample_size_n_point = 51
 significance_alpha = 0.05
 confidence_interval_alpha = 0.05
