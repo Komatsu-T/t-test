@@ -9,6 +9,14 @@ from statsmodels.stats.proportion import proportion_confint
 from joblib import Parallel, delayed
 from tqdm import tqdm
 
+def make_sample_size_list(total_sample_size, min_size_prop):
+    sample_size_min = int(total_sample_size * min_size_prop)
+    sample_size_max = total_sample_size - sample_size_min
+    group1_sample_size = np.arange(sample_size_min, sample_size_max+1, 1)
+    group2_sample_size = total_sample_size - group1_sample_size
+
+    return [(int(i), int(j)) for i, j in zip(group1_sample_size, group2_sample_size)]
+
 def read_setting(setting_file_path: str) -> dict[str, Any]:
     """設定ファイルを読み込む"""
     with open(setting_file_path, mode="rb") as setting_file:
