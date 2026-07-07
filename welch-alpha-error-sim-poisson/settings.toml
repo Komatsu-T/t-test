@@ -1,9 +1,8 @@
 [alpha_error_simulation]
 skewness_range = [0.1, 2.0]
 skewness_n_point = 51
-group1_sample_size = [20, 50, 100]
-sample_size_log_range = [-1, 1]
-sample_size_n_point = 51
+total_sample_size = [30, 50, 100]
+min_sample_size_proportion = 0.1
 significance_alpha = 0.05
 confidence_interval_alpha = 0.05
 quantile = [0.01, 0.05, 0.10]

@@ -34,10 +34,13 @@ def make_lambda_list_from_skewness(low, high, num) -> np.ndarray:
     lam = 1.0 / (skewness ** 2)
     return lam
 
-def make_sample_size_list(low, high, num, group1_sample_size) -> np.ndarray:
-    """設定ファイルからsample sizeのリストを作成する"""
-    sample_size_list = np.logspace(low, high,  num=num, endpoint=True, base=10.0)
-    return np.unique((sample_size_list * group1_sample_size).astype(int))
+def make_sample_size_list(total_sample_size, min_size_prop):
+    """設定ファイルからサンプルサイズのリストを作成する"""
+    sample_size_min = int(total_sample_size * min_size_prop)
+    sample_size_max = total_sample_size - sample_size_min
+    group1_sample_size = np.arange(sample_size_min, sample_size_max+1, 1)
+    group2_sample_size = total_sample_size - group1_sample_size
+    return group1_sample_size, group2_sample_size
 
 def t_test(group1: np.ndarray, group2: np.ndarray, method: str) -> tuple:
     """t検定を実行する"""
@@ -182,9 +185,8 @@ def main():
     settings = read_setting('./settings.toml')['alpha_error_simulation']
     SKEWNESS_RANGE = settings['skewness_range']
     N_SKEWNESS_POINT = settings['skewness_n_point']
-    SAMPLE_SIZE_LIST_G1 = settings['group1_sample_size']
-    SAMPLE_SIZE_RATIO_LOG_RANGE = settings['sample_size_log_range']
-    N_SAMPLE_SIZE_POINT = settings['sample_size_n_point']
+    TOTAL_SAMPLE_SIZE_LIST = settings['total_sample_size']
+    MIN_SAMPLE_SIZE_PROP = settings['min_sample_size_proportion']
     SIGNIFICANCE_ALPHA = settings['significance_alpha']
     CONFIDENCE_INTERVAL_ALPHA = settings['confidence_interval_alpha']
     QUANTILES = settings['quantile']
@@ -199,13 +201,13 @@ def main():
     # 先に全タスク（パラメータ＋子シード）を逐次でリスト化
     tasks = []
     seed_seq = np.random.SeedSequence(PARENT_SEED)
-    for SAMPLE_SIZE_G1 in SAMPLE_SIZE_LIST_G1:
+    for TOTAL_SAMPLE_SIZE  in TOTAL_SAMPLE_SIZE_LIST:
 
         # サンプルサイズを動かす値を設定 (Group2のサンプルサイズ)
-        SAMPLE_SIZE_LIST_G2 = make_sample_size_list(SAMPLE_SIZE_RATIO_LOG_RANGE[0], SAMPLE_SIZE_RATIO_LOG_RANGE[-1], N_SAMPLE_SIZE_POINT, SAMPLE_SIZE_G1)
+        SAMPLE_SIZE_LIST_G1, SAMPLE_SIZE_LIST_G2 = make_sample_size_list(TOTAL_SAMPLE_SIZE, MIN_SAMPLE_SIZE_PROP)
 
         # タスクのリスト化
-        for SAMPLE_SIZE_G2 in SAMPLE_SIZE_LIST_G2:
+        for SAMPLE_SIZE_G1, SAMPLE_SIZE_G2 in zip(SAMPLE_SIZE_LIST_G1, SAMPLE_SIZE_LIST_G2):
             for LAMBDA in LAMBDA_LIST:
                 seed = seed_seq.spawn(1)[0]
                 tasks.append((SAMPLE_SIZE_G1, SAMPLE_SIZE_G2, LAMBDA, seed))
