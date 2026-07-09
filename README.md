@@ -48,7 +48,7 @@ This simulation is based on "welch-alpha-error-sim", with the distribution used 
 Run the following commands on AWS EC2.
 ```bash
 git clone https://github.com/Komatsu-T/t-test.git
-cd t-test/welch-alpha-error-sim
+cd t-test/welch-alpha-error-sim-poisson
 bash setup.sh
 tmux new -s sim
 bash run.sh
