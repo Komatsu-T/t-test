@@ -41,3 +41,6 @@ The execution environment is as follows:
 | Instance type | m7i.8xlarge  |
 | OS / AMI | Ubuntu 24.04 LTS |
 | Approx. runtime | about 30 minutes|
+
+### welch-alpha-error-sim-poisson
+This simulation is the same as "welch-alpha-error-sim", but sampling dstribution is different.
