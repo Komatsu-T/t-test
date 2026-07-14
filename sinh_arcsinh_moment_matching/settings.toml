@@ -1,0 +1,6 @@
+[sinh_arcsinh_moment_matching]
+skewness_min = -2.0
+skewness_max = 2.0
+excess_kurtosis_min = -3.0
+excess_kurtosis_max = 6.0
+grid_n = 100
