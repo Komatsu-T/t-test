@@ -45,7 +45,7 @@ The execution environment is as follows:
 ### welch-alpha-error-sim-poisson
 This simulation is based on "welch-alpha-error-sim", with the distribution used to generate random numbers changed from the normal distribution to the Poisson distribution. Since the Poisson distribution has a mean and variance both equal to λ, assigning a common λ to both groups means that the equal-variance condition is always satisfied. Under this setup, the simulation examines how non-normality (the fact that normality does not hold) affects the Type I error (α error) of Student's t-test and Welch's t-test.
 
-Run the following commands on AWS EC2.
+Run the following commands on AWS EC2. The generated results are stored in Amazon S3.
 ```bash
 git clone https://github.com/Komatsu-T/t-test.git
 cd t-test/welch-alpha-error-sim-poisson
