@@ -40,7 +40,7 @@ The execution environment is as follows:
 | --- | --- |
 | Instance type | m7i.8xlarge  |
 | OS / AMI | Ubuntu 24.04 LTS |
-| Approx. runtime | about 15 minutes|
+| Approx. runtime | about 10 minutes|
 
 ### welch-alpha-error-sim-poisson
 This simulation is based on "welch-alpha-error-sim", with the distribution used to generate random numbers changed from the normal distribution to the Poisson distribution. Since the Poisson distribution has a mean and variance both equal to λ, assigning a common λ to both groups means that the equal-variance condition is always satisfied. Under this setup, the simulation examines how non-normality (the fact that normality does not hold) affects the Type I error (α error) of Student's t-test and Welch's t-test.
