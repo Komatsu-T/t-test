@@ -11,6 +11,8 @@ The code for each simulation is stored in separate subfolders, organized by obje
 ├── welch-alpha-error-sim/ 
 ├── welch-alpha-error-sim-poisson/
 ├── sinh_arcsinh_moment_matching/
+├── aaa/
+├── bbb/
 └── ...
 ```
 Each subfolder contains the complete set of code needed to run that simulation. For the detailed settings and procedures of each individual simulation, please refer to the "Simulation Details" section below.
