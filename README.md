@@ -80,9 +80,9 @@ Skewness and excess kurtosis cannot be specified independently. The constraints 
 excess kurtosis >= skewness² - 2
 ```
  
-holds. This bound does not depend on how the distribution is constructed: no distribution exists whose (skewness, excess kurtosis) pair violates it. On top of that, **the range the sinh-arcsinh family can reach sits higher still**.
+holds. This bound does not depend on how the distribution is constructed: no distribution exists whose (skewness, excess kurtosis) pair violates it. On top of that, the range the sinh-arcsinh family can reach sits higher still.
  
 | Skewness | 0.0 | 0.5 | 1.0 | 1.5 | 2.0 | 3.0 |
 |---|---|---|---|---|---|---|
-| sinh-arcsinh lower limit | **-0.86** | **-0.49** | **0.51** | **2.42** | **4.93** | **12.80** |
+| sinh-arcsinh lower limit | -0.86 | -0.49 | 0.51 | 2.42 | 4.93 | 12.80 |
 | Any distribution (skewness² - 2) | -2.00 | -1.75 | -1.00 | 0.25 | 2.00 | 7.00 |
