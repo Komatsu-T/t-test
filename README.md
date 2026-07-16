@@ -64,4 +64,25 @@ The execution environment is as follows:
 | Approx. runtime | about 25 minutes|
 
 ### sinh_arcsinh_moment_matching
+A script that numerically solves for the sinh-arcsinh transformation parameters that produce a distribution with a target skewness and excess kurtosis. Given a grid of target values, it solves for the corresponding `(eps, delta)` at each point and writes the results to Parquet.
+ 
+The normal distribution has its skewness and excess kurtosis fixed at 0; its only free parameters are the mean and the variance. Shaping a distribution itself requires transforming a normal variable. This script uses the sinh-arcsinh transformation of Jones & Pewsey (2009),
 
+```
+Y = sinh( (asinh(Z) + eps) / delta ),   Z ~ N(0, 1)
+```
+ 
+and solves for the `(eps, delta)` that realize the target (skewness, excess kurtosis) using `scipy.optimize.fsolve`.
+
+Skewness and excess kurtosis cannot be specified independently. The constraints come in two tiers. First, for any distribution,
+ 
+```
+excess kurtosis >= skewness² - 2
+```
+ 
+holds. This bound does not depend on how the distribution is constructed: no distribution exists whose (skewness, excess kurtosis) pair violates it. On top of that, **the range the sinh-arcsinh family can reach sits higher still**.
+ 
+| Skewness | 0.0 | 0.5 | 1.0 | 1.5 | 2.0 | 3.0 |
+|---|---|---|---|---|---|---|
+| sinh-arcsinh lower limit | **-0.86** | **-0.49** | **0.51** | **2.42** | **4.93** | **12.80** |
+| Any distribution (skewness² - 2) | -2.00 | -1.75 | -1.00 | 0.25 | 2.00 | 7.00 |
