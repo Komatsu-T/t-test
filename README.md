@@ -87,8 +87,9 @@ holds. This bound does not depend on how the distribution is constructed: no dis
 | sinh-arcsinh lower limit | -0.86 | -0.49 | 0.51 | 2.42 | 4.93 | 12.80 |
 | Any distribution (skewness² - 2) | -2.00 | -1.75 | -1.00 | 0.25 | 2.00 | 7.00 |
 
-Run the following commands on a local environments.
+Run the following commands on a local environments. The runtime is approximately 30 seconds.
 ```bash
 git clone https://github.com/Komatsu-T/t-test.git
 cd sinh_arcsinh_moment_matching
+bash run.sh
 ```
