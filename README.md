@@ -69,7 +69,7 @@ A script that numerically solves for the sinh-arcsinh transformation parameters 
 The normal distribution has its skewness and excess kurtosis fixed at 0; its only free parameters are the mean and the variance. Shaping a distribution itself requires transforming a normal variable. This script uses the sinh-arcsinh transformation of Jones & Pewsey (2009),
 
 ```
-Y = sinh( (asinh(Z) + eps) / delta ),   Z ~ N(0, 1)
+Y = sinh( (arcsinh(Z) + eps) / delta ),   Z ~ N(0, 1)
 ```
  
 and solves for the `(eps, delta)` that realize the target (skewness, excess kurtosis) using `scipy.optimize.fsolve`.
