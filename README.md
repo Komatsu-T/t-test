@@ -42,7 +42,7 @@ The execution environment is as follows:
 | --- | --- |
 | Instance type | m7i.8xlarge  |
 | OS / AMI | Ubuntu 24.04 LTS |
-| Approx. runtime | about 10 minutes|
+| Approx. runtime |10 minutes|
 
 ### welch-alpha-error-sim-poisson
 This simulation is based on "welch-alpha-error-sim", with the distribution used to generate random numbers changed from the normal distribution to the Poisson distribution. Since the Poisson distribution has a mean and variance both equal to λ, assigning a common λ to both groups means that the equal-variance condition is always satisfied. Under this setup, the simulation examines how non-normality (the fact that normality does not hold) affects the Type I error (α error) of Student's t-test and Welch's t-test.
@@ -61,7 +61,7 @@ The execution environment is as follows:
 | --- | --- |
 | Instance type | m7i.8xlarge  |
 | OS / AMI | Ubuntu 24.04 LTS |
-| Approx. runtime | about 25 minutes|
+| Approx. runtime |25 minutes|
 
 ### sinh_arcsinh_moment_matching
 A script that numerically solves for the sinh-arcsinh transformation parameters that produce a distribution with a target skewness and excess kurtosis. Given a grid of target values, it solves for the corresponding `(eps, delta)` at each point and writes the results to Parquet.
@@ -93,3 +93,5 @@ git clone https://github.com/Komatsu-T/t-test.git
 cd sinh_arcsinh_moment_matching
 bash run.sh
 ```
+
+35min
