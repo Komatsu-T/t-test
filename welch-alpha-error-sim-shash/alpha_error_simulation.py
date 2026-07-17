@@ -37,7 +37,7 @@ def read_shash_dist_parameter(parameter_file_path):
     data = pd.read_parquet(parameter_file_path)
     data = data[(data['converged']) & (data['target_skewness']>=0)].copy()
     data = data[['target_skewness', 'target_excess_kurtosis', 'eps', 'delta']].copy()
-    return data.head(100)
+    return data
 
 def sinh_arcsinh_transform(z, eps, delta):
     """Y = sinh((asinh(z) + eps) / delta)を計算する"""

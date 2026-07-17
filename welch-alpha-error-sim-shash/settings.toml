@@ -1,6 +1,5 @@
 [alpha_error_simulation]
-# sample_size = [[15, 15], [25, 25], [50, 50], [7,  23], [12, 38], [25, 75], [3,  27], [5,  45], [10, 90]]
-sample_size = [[50, 50]]
+sample_size = [[15, 15], [25, 25], [50, 50], [7,  23], [12, 38], [25, 75], [3,  27], [5,  45], [10, 90]]
 significance_alpha = 0.05
 confidence_interval_alpha = 0.05
 quantile = [0.01, 0.05, 0.10]
