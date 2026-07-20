@@ -1,0 +1,14 @@
+[alpha_error_simulation]
+group1_sigma = 3
+sigma_ratio_log_range = [-0.5, 0.5]
+sigma_ratio_n_point = 51
+total_sample_size = [30, 50, 100]
+min_sample_size_proportion = 0.1
+target_skew_exkurt = [[0.1, 5], [0.5, 3], [1.25, 2]]
+significance_alpha = 0.05
+confidence_interval_alpha = 0.05
+quantile = [0.01, 0.05, 0.10]
+simulation_n_repete = 1_000_000
+batch_size = 100_000
+parent_seed = 20260630
+n_jobs = -1
