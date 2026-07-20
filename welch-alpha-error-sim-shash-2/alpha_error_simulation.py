@@ -233,8 +233,6 @@ def main():
         eps = target_params['eps'].values[0]
         delta = target_params['delta'].values[0]
 
-        print(target_params)
-
         # サンプルサイズを動かす値を設定
         for total_sample_size in config.total_sample_size:
             group1_sample_size_list, group2_sample_size_list = make_sample_size_list(total_sample_size, config.min_sample_size_prop)
