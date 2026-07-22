@@ -94,5 +94,43 @@ cd sinh_arcsinh_moment_matching
 bash run.sh
 ```
 ### welch-alpha-error-sim-shash
+This simulation extends "welch-alpha-error-sim" by generating data from the sinh-arcsinh distribution instead of the normal distribution, so that skewness and excess kurtosis can be controlled. Both groups are drawn from the same distribution, meaning the population means and variances are equal and the null hypothesis holds. This isolates how non-normality alone affects the Type I error (α error) of Student's t-test and Welch's t-test across a range of sample-size ratios.
 
-35min
+The `(eps, delta)` parameters realizing each target (skewness, excess kurtosis) are read from `sinh_arcsinh_params.parquet`, produced by the "sinh_arcsinh_moment_matching" step. The settings are managed in the [alpha_error_simulation] section of settings.toml, and the results are output in Parquet format.
+
+Run the following commands on AWS EC2. The generated results are stored in Amazon S3.
+```bash
+git clone https://github.com/Komatsu-T/t-test.git
+cd t-test/welch-alpha-error-sim-shash
+bash setup.sh
+tmux new -s sim
+bash run.sh
+```
+The execution environment is as follows:
+
+| Item | Details |
+| --- | --- |
+| Instance type | m7i.8xlarge  |
+| OS / AMI | Ubuntu 24.04 LTS |
+| Approx. runtime |35 minutes|
+
+### welch-alpha-error-sim-shash-2
+This simulation builds on "welch-alpha-error-sim-shash" and additionally varies the ratio of population variances between the two groups, so non-normality and unequal variance are examined jointly. The sinh-arcsinh output is standardized and then rescaled to a target standard deviation, which lets variance be set independently of the distribution shape. With the shape fixed, Group 1's standard deviation is held constant while Group 2's is swept over a grid of variance ratios, and the sample-size split is varied for each total sample size. Both groups stay centered at the same mean, so the null hypothesis continues to hold.
+
+The settings are managed in the [alpha_error_simulation] section of settings.toml, and the results are output in Parquet format.
+
+Run the following commands on AWS EC2. The generated results are stored in Amazon S3.
+```bash
+git clone https://github.com/Komatsu-T/t-test.git
+cd t-test/welch-alpha-error-sim-shash-2
+bash setup.sh
+tmux new -s sim
+bash run.sh
+```
+The execution environment is as follows:
+
+| Item | Details |
+| --- | --- |
+| Instance type | m7i.8xlarge  |
+| OS / AMI | Ubuntu 24.04 LTS |
+| Approx. runtime |20 minutes|
